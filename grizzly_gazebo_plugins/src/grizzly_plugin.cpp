@@ -33,7 +33,6 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
 using namespace gazebo;
 
-// enum {FL=0, FR=1, RL= 2, RR=3, FA=4};
 enum {
   FL=grizzly_msgs::Drives::FrontLeft, 
   FR=grizzly_msgs::Drives::FrontRight,
@@ -187,29 +186,29 @@ void GrizzlyPlugin::UpdateChild()
   js_.header.stamp.nsec = time_now.nsec;
   if (set_joints_[RL])
   {
-    joints_[RL]->SetVelocity( 0, wheel_ang_vel_.rear_left);
-    joints_[RL]->SetMaxForce( 0, torque_ );
+    joints_[RL]->SetParam( "vel", 0, wheel_ang_vel_.rear_left);
+    joints_[RL]->SetParam( "max_force", 0, torque_);
     js_.position[RL] = joints_[RL]->GetAngle(0).Radian();
     js_.velocity[RL] = encoder_msg.rear_left = joints_[RL]->GetVelocity(0);
   }
   if (set_joints_[RR])
   {
-    joints_[RR]->SetVelocity( 0, wheel_ang_vel_.rear_right);
-    joints_[RR]->SetMaxForce( 0, torque_ );
+    joints_[RR]->SetParam( "vel", 0, wheel_ang_vel_.rear_right);
+    joints_[RR]->SetParam( "max_force", 0, torque_);
     js_.position[RR] = joints_[RR]->GetAngle(0).Radian();
     js_.velocity[RR] = encoder_msg.rear_right = joints_[RR]->GetVelocity(0);
   }
   if (set_joints_[FL])
   {
-    joints_[FL]->SetVelocity( 0, wheel_ang_vel_.front_left);
-    joints_[FL]->SetMaxForce( 0, torque_ );
+    joints_[FL]->SetParam( "vel", 0, wheel_ang_vel_.front_left);
+    joints_[FL]->SetParam( "max_force", 0, torque_);
     js_.position[FL] = joints_[FL]->GetAngle(0).Radian();
     js_.velocity[FL] = encoder_msg.front_left = joints_[FL]->GetVelocity(0);
   }
   if (set_joints_[FR])
   {
-    joints_[FR]->SetVelocity( 0, wheel_ang_vel_.front_right);
-    joints_[FR]->SetMaxForce( 0, torque_ );
+    joints_[FR]->SetParam("vel", 0, wheel_ang_vel_.front_right);
+    joints_[FR]->SetParam("max_force", 0, torque_ );
     js_.position[FR] = joints_[FR]->GetAngle(0).Radian();
     js_.velocity[FR] = encoder_msg.front_right = joints_[FR]->GetVelocity(0);
   }
