@@ -11,6 +11,7 @@ catkin_package(
   DEPENDS system_lib
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Your package locations should be listed before other locations
 include_directories(
   include
