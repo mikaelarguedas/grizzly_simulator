@@ -9,7 +9,7 @@ Redistribution and use in source and binary forms, with or without modification,
 the following conditions are met:
  * Redistributions of source code must retain the above copyright notice, this list of conditions and the
    following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the 
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
    following disclaimer in the documentation and/or other materials provided with the distribution.
  * Neither the name of Clearpath Robotics nor the names of its contributors may be used to endorse or promote
    products derived from this software without specific prior written permission.
@@ -22,23 +22,24 @@ OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTE
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
- 
+
 
 #include <boost/thread.hpp>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
 #include <grizzly_plugin/grizzly_plugin.h>
+#include <nav_msgs/Odometry.h>
 #include <ros/time.h>
+#include <sensor_msgs/JointState.h>
+#include <string>
 
 using namespace gazebo;
 
 enum {
-  FL=grizzly_msgs::Drives::FrontLeft, 
-  FR=grizzly_msgs::Drives::FrontRight,
-  RL=grizzly_msgs::Drives::RearLeft,
-  RR=grizzly_msgs::Drives::RearRight,
-  FA=4};
+  FL = grizzly_msgs::Drives::FrontLeft,
+  FR = grizzly_msgs::Drives::FrontRight,
+  RL = grizzly_msgs::Drives::RearLeft,
+  RR = grizzly_msgs::Drives::RearRight,
+  FA = 4};
 
 GrizzlyPlugin::GrizzlyPlugin()
 {
@@ -55,7 +56,7 @@ void GrizzlyPlugin::FiniChild()
   rosnode_->shutdown();
   spinner_thread_->join();
 }
-    
+
 void GrizzlyPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
 {
   this->model_ = _parent;
@@ -96,7 +97,7 @@ void GrizzlyPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   base_geom_ = model_->GetChildCollision(base_geom_name_);
 
 
-  //base_geom_->SetContactsEnabled(true);
+  // base_geom_->SetContactsEnabled(true);
 
   // Get the name of the parent model
   std::string modelName = _sdf->GetParent()->Get<std::string>("name");
@@ -131,7 +132,7 @@ void GrizzlyPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   last_cmd_vel_time_ = 0;
 
   wheel_ang_vel_.rear_left = 0.0;
-  wheel_ang_vel_.rear_right= 0.0;
+  wheel_ang_vel_.rear_right = 0.0;
   wheel_ang_vel_.front_left = 0.0;
   wheel_ang_vel_.front_left = 0.0;
 
@@ -141,7 +142,7 @@ void GrizzlyPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   set_joints_[3] = false;
   set_joints_[4] = false;
 
-  //TODO: fix this
+  // TODO: fix this
   joints_[RL] = model_->GetJoint(rl_joint_name_);
   joints_[RR] = model_->GetJoint(rr_joint_name_);
   joints_[FL] = model_->GetJoint(fl_joint_name_);
@@ -154,13 +155,14 @@ void GrizzlyPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   if (joints_[FR]) set_joints_[FR] = true;
   if (joints_[FA]) set_joints_[FA] = true;
 
-  //initialize time and odometry position
+  // initialize time and odometry position
   prev_update_time_ = last_cmd_vel_time_ = this->world_->GetSimTime();
 
   // Initialize the ROS node and subscribe to cmd_vel
   int argc = 0;
   char** argv = NULL;
-  ros::init(argc, argv, "gazebo_grizzly", ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+  ros::init(argc, argv, "gazebo_grizzly",
+    ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
   rosnode_ = new ros::NodeHandle( node_namespace_ );
 
   drive_sub_ = rosnode_->subscribe("cmd_drive", 1, &GrizzlyPlugin::OnDrive, this );
@@ -170,7 +172,8 @@ void GrizzlyPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   // Listen to the update event. This event is broadcast every
   // simulation iteration.
   this->spinner_thread_ = new boost::thread( boost::bind( &GrizzlyPlugin::spin, this) );
-  this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&GrizzlyPlugin::UpdateChild, this));
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(
+    &GrizzlyPlugin::UpdateChild, this));
 }
 
 
@@ -186,29 +189,29 @@ void GrizzlyPlugin::UpdateChild()
   js_.header.stamp.nsec = time_now.nsec;
   if (set_joints_[RL])
   {
-    joints_[RL]->SetParam( "vel", 0, wheel_ang_vel_.rear_left);
-    joints_[RL]->SetParam( "max_force", 0, torque_);
+    joints_[RL]->SetParam( "vel", 0, wheel_ang_vel_.rear_left );
+    joints_[RL]->SetParam( "max_force", 0, torque_ );
     js_.position[RL] = joints_[RL]->GetAngle(0).Radian();
     js_.velocity[RL] = encoder_msg.rear_left = joints_[RL]->GetVelocity(0);
   }
   if (set_joints_[RR])
   {
-    joints_[RR]->SetParam( "vel", 0, wheel_ang_vel_.rear_right);
-    joints_[RR]->SetParam( "max_force", 0, torque_);
+    joints_[RR]->SetParam( "vel", 0, wheel_ang_vel_.rear_right );
+    joints_[RR]->SetParam( "max_force", 0, torque_ );
     js_.position[RR] = joints_[RR]->GetAngle(0).Radian();
     js_.velocity[RR] = encoder_msg.rear_right = joints_[RR]->GetVelocity(0);
   }
   if (set_joints_[FL])
   {
-    joints_[FL]->SetParam( "vel", 0, wheel_ang_vel_.front_left);
-    joints_[FL]->SetParam( "max_force", 0, torque_);
+    joints_[FL]->SetParam( "vel", 0, wheel_ang_vel_.front_left );
+    joints_[FL]->SetParam( "max_force", 0, torque_ );
     js_.position[FL] = joints_[FL]->GetAngle(0).Radian();
     js_.velocity[FL] = encoder_msg.front_left = joints_[FL]->GetVelocity(0);
   }
   if (set_joints_[FR])
   {
-    joints_[FR]->SetParam("vel", 0, wheel_ang_vel_.front_right);
-    joints_[FR]->SetParam("max_force", 0, torque_ );
+    joints_[FR]->SetParam( "vel", 0, wheel_ang_vel_.front_right );
+    joints_[FR]->SetParam( "max_force", 0, torque_ );
     js_.position[FR] = joints_[FR]->GetAngle(0).Radian();
     js_.velocity[FR] = encoder_msg.front_right = joints_[FR]->GetVelocity(0);
   }
@@ -241,7 +244,7 @@ void GrizzlyPlugin::UpdateChild()
 
 void GrizzlyPlugin::OnDrive( const grizzly_msgs::DriveConstPtr &msg)
 {
-  last_cmd_vel_time_ = this->world_->GetSimTime();  
+  last_cmd_vel_time_ = this->world_->GetSimTime();
   wheel_ang_vel_ = *msg;
 }
 
